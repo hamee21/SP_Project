@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const holidaySchema = new mongoose.Schema({
+const HolidaySchema = new mongoose.Schema({
     restaurantId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Restaurant',
@@ -34,4 +34,4 @@ const holidaySchema = new mongoose.Schema({
     }
 });
 
-module.exports = mongoose.model('Holiday', holidaySchema);
+module.exports = mongoose.model('Holiday', HolidaySchema);

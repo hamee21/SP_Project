@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const reservationHistorySchema = new mongoose.Schema({
+const ReservationHistorySchema = new mongoose.Schema({
     reservationId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Reservation',
@@ -26,4 +26,4 @@ const reservationHistorySchema = new mongoose.Schema({
     }
 });
 
-module.exports = mongoose.model('ReservationHistory', reservationHistorySchema);
+module.exports = mongoose.model('ReservationHistory', ReservationHistorySchema);

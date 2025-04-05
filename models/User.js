@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-const userSchema = new mongoose.Schema({
+const UserSchema = new mongoose.Schema({
     name: { 
         type: String, 
         required: [true, 'Please add a name'] 
@@ -71,4 +71,4 @@ UserSchema.methods.matchPassword = async function(enteredPassword){
     return await bcrypt.compare(enteredPassword,this.password);
 }
 
-module.exports = mongoose.model('User', userSchema);
+module.exports = mongoose.model('User', UserSchema);

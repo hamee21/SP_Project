@@ -10,13 +10,16 @@ exports.protect= async (req,res,next) => {
     }
 
     //Make sure token exists
-    if(!token){
-        return res.status(401).json({success:false, message:`Not authorize to access this route`});
+    if(!token  || token=='null'){
+        return res.status(401).json({
+            success: false, 
+            message: `Not authorize to access this route`
+        });
     }
 
     try{
         //Verify token
-        const decoded =jwt.verify(token,process.env.JWT_SECRET);
+        const decoded = jwt.verify(token,process.env.JWT_SECRET);
 
         console.log(decoded);
 
@@ -25,7 +28,10 @@ exports.protect= async (req,res,next) => {
         next();
     } catch(err){
         console.log(err.stack);
-        return res.status(401).json({success:false, message:`Not authorize to access this route`});
+        return res.status(401).json({
+            success: false, 
+            message: `Not authorize to access this route`
+        });
     }
 };
 
@@ -34,7 +40,7 @@ exports.authorize = (...roles) => {
     return (req,res,next) => {
         if(!roles.includes(req.user.role)){
             return res.status(403).json({
-                success:false,
+                success: false,
                 message: `User role ${req.user.role} is not authorized to access this route`
             });
         }
