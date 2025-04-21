@@ -7,7 +7,12 @@ const ReservationHistory = require('../models/ReservationHistory');
 // @access  Private
 exports.getReservations = async (req, res) => {
     try {
-        const query = req.user.role === 'admin' ? {} : { userId: req.user._id };
+        const baseQuery = req.user.role === 'admin' ? {} : { userId: req.user._id };
+
+        const query = {
+            ...baseQuery,
+            status: { $nin: ['canceled', 'deleted'] }
+        };
 
         const reservations = await Reservation.find(query).populate('restaurantId');
         res.status(200).json({ 
@@ -28,7 +33,11 @@ exports.getReservations = async (req, res) => {
 // @access  Private
 exports.getReservation = async (req, res) => {
     try {
-        const reservation = await Reservation.findById(req.params.id).populate('restaurantId');
+        const reservation = await Reservation.findOne({
+            _id: req.params.id,
+            status: { $nin: ['canceled', 'deleted'] }
+        }).populate('restaurantId');
+
         if (!reservation) {
             return res.status(404).json({ 
                 success: false, 
@@ -79,7 +88,7 @@ exports.createReservation = async (req, res) => {
 
         const userReservationsCount = await Reservation.countDocuments({
             userId: req.user._id,
-            date: { $gte: today, $lt: tomorrow },
+            createdAt: { $gte: today, $lt: tomorrow },
             status: { $nin: ['canceled', 'deleted'] }
         });
 
@@ -139,7 +148,10 @@ exports.createReservation = async (req, res) => {
 // @access  Private
 exports.updateReservation = async (req, res) => {
     try {
-        const reservation = await Reservation.findById(req.params.id);
+        const reservation = await Reservation.findOne({
+            _id: req.params.id,
+            status: { $nin: ['canceled', 'deleted'] }
+        });
         if (!reservation) {
             return res.status(404).json({ 
                 success: false, 
@@ -204,7 +216,10 @@ exports.updateReservation = async (req, res) => {
 // @access  Private
 exports.cancelReservation = async (req, res) => {
     try {
-        const reservation = await Reservation.findById(req.params.id);
+        const reservation = await Reservation.findOne({
+            _id: req.params.id,
+            status: { $nin: ['canceled', 'deleted'] }
+        });
         if (!reservation) {
             return res.status(404).json({ 
                 success: false, 
