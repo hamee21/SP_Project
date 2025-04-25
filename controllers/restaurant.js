@@ -15,22 +15,78 @@ const generateTimeSlots = (start, end) => {
     return slots;
 };
 
-// @desc    Get all restaurants
+// @desc    Get all restaurants (with filter, sort, select, pagination)
 // @route   GET /api/restaurants
 // @access  Public
 exports.getRestaurants = async (req, res) => {
+    let query;
+
+    // Copy req.query
+    const reqQuery = { ...req.query };
+
+    // Fields to exclude from filter
+    const removeFields = ['select', 'sort', 'page', 'limit'];
+    removeFields.forEach(param => delete reqQuery[param]);
+
+    // Convert operators (gt, gte, lt, etc.)
+    let queryStr = JSON.stringify(reqQuery);
+    queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`);
+
+    // Build initial query
+    query = Restaurant.find(JSON.parse(queryStr));
+
+    // Select specific fields
+    if (req.query.select) {
+        const fields = req.query.select.split(',').join(' ');
+        query = query.select(fields);
+    }
+
+    // Sort
+    if (req.query.sort) {
+        const sortBy = req.query.sort.split(',').join(' ');
+        query = query.sort(sortBy);
+    } else {
+        query = query.sort('-createdAt'); // default: newest first
+    }
+
+    // Pagination
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 25;
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+    const total = await Restaurant.countDocuments();
+
+    query = query.skip(startIndex).limit(limit);
+
     try {
-        const restaurants = await Restaurant.find();
+        const restaurants = await query;
+
+        const pagination = {};
+        if (endIndex < total) {
+            pagination.next = {
+                page: page + 1,
+                limit
+            };
+        }
+
+        if (startIndex > 0) {
+            pagination.prev = {
+                page: page - 1,
+                limit
+            };
+        }
 
         res.status(200).json({
-            success: true, 
-            count: restaurants.length, 
-            data: restaurants 
+            success: true,
+            count: restaurants.length,
+            pagination,
+            data: restaurants
         });
     } catch (err) {
-        res.status(500).json({ 
-            success: false, 
-            message: `Server error` 
+        console.error(err);
+        res.status(500).json({
+            success: false,
+            message: `Server error`
         });
     }
 };

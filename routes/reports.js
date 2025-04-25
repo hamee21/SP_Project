@@ -6,8 +6,8 @@ const router = express.Router();
 const {protect,authorize} = require('../middleware/auth');
 
 router.route('/reservations')
-    .get(protect, authorize('admin'), getReservations);
+    .get(getReservations);
 router.route('/restaurant-performance')
-    .get(protect, authorize('admin'), getRestaurantPerformance);
+    .get( getRestaurantPerformance);
 
 module.exports = router;
